@@ -1,0 +1,5 @@
+{
+  "name": "EdTech Performance Intelligence Model",
+  "description": "An adaptive learning intelligence app that analyzes student data to predict performance and suggest personalized interventions using Gemini.",
+  "requestFramePermissions": []
+}
