@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Tooltip } from './Tooltip';
 
 interface SegmentedControlProps<T extends string> {
   label: string;
@@ -7,6 +8,7 @@ interface SegmentedControlProps<T extends string> {
   options: readonly T[];
   value: T;
   onChange: (name: string, value: T) => void;
+  tooltip?: string;
 }
 
 export const SegmentedControl = <T extends string>({
@@ -15,10 +17,14 @@ export const SegmentedControl = <T extends string>({
   options,
   value,
   onChange,
+  tooltip,
 }: SegmentedControlProps<T>) => {
   return (
     <div>
-      <label className="text-sm font-medium text-slate-300 block mb-2">{label}</label>
+      <div className="flex items-center space-x-2 mb-2">
+        <label className="text-sm font-medium text-slate-300 block">{label}</label>
+        {tooltip && <Tooltip text={tooltip} />}
+      </div>
       <div className="flex w-full bg-slate-800 rounded-lg p-1">
         {options.map((option) => (
           <button

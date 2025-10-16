@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { INITIAL_STUDENT_DATA, STUDENT_PROFILES } from './constants';
+import { INITIAL_STUDENT_DATA, STUDENT_PROFILES, TOOLTIP_CONTENT } from './constants';
 import { StudentData, ApiResponse, HistoryItem } from './types';
 import { analyzeStudentPerformance } from './services/geminiService';
 import { Header } from './components/Header';
@@ -115,23 +115,25 @@ const App: React.FC = () => {
                     options={['morning', 'afternoon', 'night'] as const}
                     value={studentData.time_of_day}
                     onChange={handleSegmentChange}
+                    tooltip={TOOLTIP_CONTENT.time_of_day}
                   />
-                  <SliderInput label="Stress Level" id="stress" value={studentData.stress} onChange={handleInputChange} />
-                  <SliderInput label="Motivation Level" id="motivation" value={studentData.motivation} onChange={handleInputChange} />
-                  <SliderInput label="Answer Option Clicks" id="option_clicks" value={studentData.option_clicks} onChange={handleInputChange} min={0} max={10} step={1} />
-                  <SliderInput label="Conscientiousness" id="conscientiousness" value={studentData.conscientiousness} onChange={handleInputChange} />
-                  <SliderInput label="Question Difficulty" id="difficulty" value={studentData.difficulty} onChange={handleInputChange} />
-                  <SliderInput label="Recent Practice Score" id="recent_practice" value={studentData.recent_practice} onChange={handleInputChange} />
-                  <SliderInput label="Time on Question (sec)" id="time_on_question" value={studentData.time_on_question} onChange={handleInputChange} min={1} max={300} step={1} unit="s" />
-                  <SliderInput label="Fatigue Propensity" id="fatigue_propensity" value={studentData.fatigue_propensity} onChange={handleInputChange} />
-                  <SliderInput label="Study Time Before (min)" id="study_time_before" value={studentData.study_time_before} onChange={handleInputChange} min={0} max={180} step={1} unit="m" />
-                  <SliderInput label="Baseline Ability" id="baseline_ability" value={studentData.baseline_ability} onChange={handleInputChange} />
-                  <SliderInput label="Fatigue Multiplier" id="fatigue_multiplier" value={studentData.fatigue_multiplier} onChange={handleInputChange} />
+                  <SliderInput label="Stress Level" id="stress" value={studentData.stress} onChange={handleInputChange} tooltip={TOOLTIP_CONTENT.stress} />
+                  <SliderInput label="Motivation Level" id="motivation" value={studentData.motivation} onChange={handleInputChange} tooltip={TOOLTIP_CONTENT.motivation} />
+                  <SliderInput label="Answer Option Clicks" id="option_clicks" value={studentData.option_clicks} onChange={handleInputChange} min={0} max={10} step={1} tooltip={TOOLTIP_CONTENT.option_clicks} />
+                  <SliderInput label="Conscientiousness" id="conscientiousness" value={studentData.conscientiousness} onChange={handleInputChange} tooltip={TOOLTIP_CONTENT.conscientiousness} />
+                  <SliderInput label="Question Difficulty" id="difficulty" value={studentData.difficulty} onChange={handleInputChange} tooltip={TOOLTIP_CONTENT.difficulty} />
+                  <SliderInput label="Recent Practice Score" id="recent_practice" value={studentData.recent_practice} onChange={handleInputChange} tooltip={TOOLTIP_CONTENT.recent_practice} />
+                  <SliderInput label="Time on Question (sec)" id="time_on_question" value={studentData.time_on_question} onChange={handleInputChange} min={1} max={300} step={1} unit="s" tooltip={TOOLTIP_CONTENT.time_on_question} />
+                  <SliderInput label="Fatigue Propensity" id="fatigue_propensity" value={studentData.fatigue_propensity} onChange={handleInputChange} tooltip={TOOLTIP_CONTENT.fatigue_propensity} />
+                  <SliderInput label="Study Time Before (min)" id="study_time_before" value={studentData.study_time_before} onChange={handleInputChange} min={0} max={180} step={1} unit="m" tooltip={TOOLTIP_CONTENT.study_time_before} />
+                  <SliderInput label="Baseline Ability" id="baseline_ability" value={studentData.baseline_ability} onChange={handleInputChange} tooltip={TOOLTIP_CONTENT.baseline_ability} />
+                  <SliderInput label="Fatigue Multiplier" id="fatigue_multiplier" value={studentData.fatigue_multiplier} onChange={handleInputChange} tooltip={TOOLTIP_CONTENT.fatigue_multiplier} />
                   <ToggleSwitch
                       label="Hint Used"
                       name="hint_used"
                       checked={studentData.hint_used}
                       onChange={handleBooleanChange}
+                      tooltip={TOOLTIP_CONTENT.hint_used}
                   />
 
                   <button

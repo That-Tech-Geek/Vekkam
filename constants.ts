@@ -131,3 +131,19 @@ export const RESPONSE_SCHEMA = {
     },
     required: ['prediction', 'confidence', 'action_recommendation', 'reasoning'],
 };
+
+export const TOOLTIP_CONTENT = {
+  time_of_day: "Reflects when the student is studying. Performance can vary, with late-night sessions often correlating with fatigue.",
+  stress: "The student's self-reported or inferred stress level. High stress can impair cognitive function and lead to incorrect answers.",
+  motivation: "The student's interest and drive to learn. High motivation is a strong predictor of persistence and success.",
+  option_clicks: "The number of times a student changes their answer on a multiple-choice question. High clicks can indicate uncertainty or guessing.",
+  conscientiousness: "A personality trait indicating diligence and care. Highly conscientious students are more likely to double-check work.",
+  difficulty: "The difficulty level of the current question. A mismatch between difficulty and ability can lead to frustration or boredom.",
+  recent_practice: "The student's performance on closely related topics recently. Strong recent performance suggests mastery and preparedness.",
+  time_on_question: "How long the student spends on a question. Too little time may suggest guessing; too much may indicate struggle.",
+  fatigue_propensity: "A measure of how susceptible the student is to mental fatigue during long study sessions.",
+  study_time_before: "The duration of the current study session before this question. Longer sessions can lead to declining performance due to fatigue.",
+  hint_used: "Whether the student used a hint on the current question. Hint usage often signals that the student is struggling with the concept.",
+  baseline_ability: "The student's overall proficiency in the subject, established from historical performance.",
+  fatigue_multiplier: "An algorithmic factor that amplifies the effect of fatigue based on other signals.",
+};

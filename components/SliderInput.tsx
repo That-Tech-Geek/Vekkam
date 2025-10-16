@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Tooltip } from './Tooltip';
 
 interface SliderInputProps {
   label: string;
@@ -10,6 +11,7 @@ interface SliderInputProps {
   max?: number;
   step?: number;
   unit?: string;
+  tooltip?: string;
 }
 
 export const SliderInput: React.FC<SliderInputProps> = ({
@@ -21,13 +23,17 @@ export const SliderInput: React.FC<SliderInputProps> = ({
   max = 1,
   step = 0.01,
   unit = '',
+  tooltip,
 }) => {
   return (
     <div className="flex flex-col space-y-2">
       <div className="flex justify-between items-center">
-        <label htmlFor={id} className="text-sm font-medium text-slate-300">
-          {label}
-        </label>
+        <div className="flex items-center space-x-2">
+          <label htmlFor={id} className="text-sm font-medium text-slate-300">
+            {label}
+          </label>
+          {tooltip && <Tooltip text={tooltip} />}
+        </div>
         <span className="text-sm font-semibold text-cyan-400 bg-slate-700 px-2 py-1 rounded-md">
           {value}{unit}
         </span>

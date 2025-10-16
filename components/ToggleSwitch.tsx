@@ -1,20 +1,25 @@
 import React from 'react';
+import { Tooltip } from './Tooltip';
 
 interface ToggleSwitchProps {
   label: string;
   name: string;
   checked: boolean;
   onChange: (name: string, checked: boolean) => void;
+  tooltip?: string;
 }
 
-export const ToggleSwitch: React.FC<ToggleSwitchProps> = ({ label, name, checked, onChange }) => {
+export const ToggleSwitch: React.FC<ToggleSwitchProps> = ({ label, name, checked, onChange, tooltip }) => {
   const handleToggle = () => {
     onChange(name, !checked);
   };
 
   return (
     <div>
-      <label className="text-sm font-medium text-slate-300 block mb-2">{label}</label>
+      <div className="flex items-center space-x-2 mb-2">
+        <label className="text-sm font-medium text-slate-300 block">{label}</label>
+        {tooltip && <Tooltip text={tooltip} />}
+      </div>
       <button
         type="button"
         role="switch"
