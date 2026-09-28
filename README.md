@@ -25,6 +25,9 @@ Then:
 
 ```bash
 examforge architecture
+examforge llm connect-ollama --model llama3.2:3b
+examforge llm chat "Explain opportunity cost"
+examforge llm connect-api --model gpt-4.1
 examforge ingest-text --file notes.txt
 examforge blueprint --file notes.txt
 examforge questions --file notes.txt --count 4
@@ -40,6 +43,10 @@ Every command emits JSON so the CLI can be composed with shell scripts, CI, othe
 - `questions`: concept -> active-recall question set
 - `review`: mastery state -> next review state
 - `architecture`: inspect the engine pipeline
+- `llm connect-api`: link an OpenAI-compatible API using an environment variable for the key
+- `llm connect-ollama`: link a local Ollama server and installed model
+- `llm status`: inspect the active provider without exposing secrets
+- `llm chat`: send a prompt through the active provider
 
 ## Repository layout
 
@@ -54,5 +61,7 @@ Every command emits JSON so the CLI can be composed with shell scripts, CI, othe
 - `app/cli.py`: product-facing CLI
 - `tests/`: contracts
 - `docs/`: architecture and roadmap
+
+LLM integrations remain isolated behind `app/llm/`; provider configuration is stored locally without storing API keys. API keys are read from environment variables at request time.
 
 Optional integrations remain isolated behind adapters: PyMuPDF/OCR/OpenCV, Neo4j, Qdrant, Manim, Kokoro/Piper and WhisperX.
