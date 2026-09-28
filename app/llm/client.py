@@ -7,10 +7,8 @@ from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
-
 _CONFIG_DIR = Path.home() / ".config" / "examforge"
 _CONFIG_FILE = _CONFIG_DIR / "llm.json"
-
 
 @dataclass(frozen=True)
 class LLMConfig:
@@ -22,7 +20,6 @@ class LLMConfig:
     @property
     def api_key(self) -> str | None:
         return os.getenv(self.api_key_env) if self.api_key_env else None
-
 
 def save_config(config: LLMConfig) -> Path:
     _CONFIG_DIR.mkdir(parents=True, exist_ok=True)
@@ -36,11 +33,10 @@ def save_config(config: LLMConfig) -> Path:
             },
             indent=2,
         )
-        + "\\n",
+        + "\n",
         encoding="utf-8",
     )
     return _CONFIG_FILE
-
 
 def load_config() -> LLMConfig | None:
     if not _CONFIG_FILE.exists():
@@ -52,7 +48,6 @@ def load_config() -> LLMConfig | None:
         model=data["model"],
         api_key_env=data.get("api_key_env"),
     )
-
 
 class LLMClient:
     """Small dependency-free client for Ollama and OpenAI-compatible APIs."""
@@ -92,7 +87,6 @@ class LLMClient:
         payload = {"model": self.config.model, "messages": messages, "stream": False}
         result = self._post(self.config.endpoint.rstrip("/") + "/chat/completions", payload, headers)
         return str(result["choices"][0]["message"]["content"])
-
 
 def config_path() -> Path:
     return _CONFIG_FILE
