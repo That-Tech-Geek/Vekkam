@@ -69,6 +69,7 @@ jobs:
       - name: Validate distribution
         run: python -m twine check dist/*
 
+      # Push-triggered run used to force a fresh publish when manual dispatch is unavailable.
       - name: Publish to PyPI
         env:
           TWINE_USERNAME: __token__
