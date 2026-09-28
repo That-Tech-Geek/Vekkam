@@ -10,6 +10,7 @@ from urllib.request import Request, urlopen
 _CONFIG_DIR = Path.home() / ".config" / "examforge"
 _CONFIG_FILE = _CONFIG_DIR / "llm.json"
 
+
 @dataclass(frozen=True)
 class LLMConfig:
     provider: str
@@ -20,6 +21,7 @@ class LLMConfig:
     @property
     def api_key(self) -> str | None:
         return os.getenv(self.api_key_env) if self.api_key_env else None
+
 
 def save_config(config: LLMConfig) -> Path:
     _CONFIG_DIR.mkdir(parents=True, exist_ok=True)
@@ -38,6 +40,7 @@ def save_config(config: LLMConfig) -> Path:
     )
     return _CONFIG_FILE
 
+
 def load_config() -> LLMConfig | None:
     if not _CONFIG_FILE.exists():
         return None
@@ -49,18 +52,33 @@ def load_config() -> LLMConfig | None:
         api_key_env=data.get("api_key_env"),
     )
 
+
 class LLMClient:
-    """Small dependency-free client for Ollama and OpenAI-compatible APIs."""
+    """LLM client for Ollama, Groq, and generic OpenAI-compatible APIs."""
 
     def __init__(self, config: LLMConfig):
         self.config = config
 
-    def _post(self, url: str, payload: dict[str, object], headers: dict[str, str] | None = None) -> dict[str, object]:
+    def _post(
+        self,
+        url: str,
+        payload: dict[str, object],
+        headers: dict[str, str] | None = None,
+    ) -> dict[str, object]:
         body = json.dumps(payload).encode("utf-8")
-        request = Request(url, data=body, method="POST")
-        request.add_header("Content-Type", "application/json")
+        request = Request(
+            url,
+            data=body,
+            method="POST",
+            headers={
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+                "User-Agent": "examforge/0.2.0",
+            },
+        )
         for key, value in (headers or {}).items():
             request.add_header(key, value)
+
         try:
             with urlopen(request, timeout=120) as response:
                 return json.loads(response.read().decode("utf-8"))
@@ -70,6 +88,26 @@ class LLMClient:
         except URLError as exc:
             raise RuntimeError(f"Could not reach LLM at {url}: {exc.reason}") from exc
 
+    def _groq_chat(self, messages: list[dict[str, str]]) -> str:
+        try:
+            from groq import Groq
+        except ImportError as exc:
+            raise RuntimeError(
+                "Groq support is not installed. Reinstall ExamForge with: "
+                "python -m pip install -U examforge"
+            ) from exc
+
+        client = Groq(api_key=self.config.api_key)
+        completion = client.chat.completions.create(
+            model=self.config.model,
+            messages=messages,
+            stream=False,
+        )
+        content = completion.choices[0].message.content
+        if content is None:
+            raise RuntimeError("Groq returned an empty message.")
+        return content
+
     def chat(self, prompt: str, system: str | None = None) -> str:
         messages: list[dict[str, str]] = []
         if system:
@@ -77,16 +115,38 @@ class LLMClient:
         messages.append({"role": "user", "content": prompt})
 
         if self.config.provider == "ollama":
-            payload = {"model": self.config.model, "messages": messages, "stream": False}
-            result = self._post(self.config.endpoint.rstrip("/") + "/api/chat", payload)
+            payload = {
+                "model": self.config.model,
+                "messages": messages,
+                "stream": False,
+            }
+            result = self._post(
+                self.config.endpoint.rstrip("/") + "/api/chat",
+                payload,
+            )
             return str(result["message"]["content"])
+
+        if self.config.endpoint.rstrip("/").lower().startswith(
+            "https://api.groq.com/openai/v1"
+        ):
+            return self._groq_chat(messages)
 
         headers = {}
         if self.config.api_key:
             headers["Authorization"] = f"Bearer {self.config.api_key}"
-        payload = {"model": self.config.model, "messages": messages, "stream": False}
-        result = self._post(self.config.endpoint.rstrip("/") + "/chat/completions", payload, headers)
+
+        payload = {
+            "model": self.config.model,
+            "messages": messages,
+            "stream": False,
+        }
+        result = self._post(
+            self.config.endpoint.rstrip("/") + "/chat/completions",
+            payload,
+            headers,
+        )
         return str(result["choices"][0]["message"]["content"])
+
 
 def config_path() -> Path:
     return _CONFIG_FILE
