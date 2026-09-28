@@ -1,20 +1,37 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# ExamForge
 
-# Run and deploy your AI Studio app
+Vekkam is now **ExamForge**: a multimodal exam-preparation engine built around a canonical Learning IR.
 
-This contains everything you need to run your app locally.
+The canonical Learning IR is the source of truth. Storage engines, retrieval, LLMs, Manim, narration, quizzes, and mastery state are adapters around that representation.
 
-View your app in AI Studio: https://ai.studio/apps/drive/196Ggrqx_7Ocuosvf6wrdw54r5vGTZdRU
+## Pipeline
 
-## Run Locally
+```
+SOURCE MATERIAL -> MULTIMODAL EXTRACTION -> CANONICAL LEARNING IR
+-> KNOWLEDGE GRAPH + VECTOR RETRIEVAL -> VISUAL BLUEPRINT
+-> MANIM COMPILER + VALIDATION -> NARRATION + SYNC -> VIDEO
+-> ACTIVE RECALL + FSRS -> EXAM INTELLIGENCE
+```
 
-**Prerequisites:**  Node.js
+## Layout
+- `app/core/` canonical domain models and stable IDs
+- `app/ingestion/` document/OCR/image extraction
+- `app/visual/` graph, table and equation understanding
+- `app/knowledge/` graph and vector-store ports
+- `app/blueprints/` declarative teaching blueprints
+- `app/manim/` scene compilation and validation
+- `app/audio/` narration and synchronization
+- `app/assessment/` recall, rescue and mastery
+- `app/api/` FastAPI surface
+- `tests/` contracts
+- `docs/` architecture and roadmap
 
+## Run
+```bash
+python -m venv .venv
+# Windows: .venv\\Scripts\\activate
+pip install -e ".[dev]"
+uvicorn app.main:app --reload
+```
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+Optional integrations are isolated behind adapters: PyMuPDF/OCR/OpenCV, Neo4j, Qdrant, Manim, Kokoro/Piper and WhisperX.
