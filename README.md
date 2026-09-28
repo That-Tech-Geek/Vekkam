@@ -1,8 +1,8 @@
 # ExamForge
 
-Vekkam is now **ExamForge**: a multimodal exam-preparation engine built around a canonical Learning IR.
+Vekkam is now a **CLI-first** multimodal exam-preparation engine built around a canonical Learning IR.
 
-The canonical Learning IR is the source of truth. Storage engines, retrieval, LLMs, Manim, narration, quizzes, and mastery state are adapters around that representation.
+There is no frontend or web server in the runtime path. The CLI is the user-facing product surface; the domain engine remains importable as a Python package.
 
 ## Pipeline
 
@@ -13,25 +13,46 @@ SOURCE MATERIAL -> MULTIMODAL EXTRACTION -> CANONICAL LEARNING IR
 -> ACTIVE RECALL + FSRS -> EXAM INTELLIGENCE
 ```
 
-## Layout
-- `app/core/` canonical domain models and stable IDs
-- `app/ingestion/` document/OCR/image extraction
-- `app/visual/` graph, table and equation understanding
-- `app/knowledge/` graph and vector-store ports
-- `app/blueprints/` declarative teaching blueprints
-- `app/manim/` scene compilation and validation
-- `app/audio/` narration and synchronization
-- `app/assessment/` recall, rescue and mastery
-- `app/api/` FastAPI surface
-- `tests/` contracts
-- `docs/` architecture and roadmap
+## CLI
 
-## Run
+Install locally:
+
 ```bash
-python -m venv .venv
-# Windows: .venv\\Scripts\\activate
-pip install -e ".[dev]"
-uvicorn app.main:app --reload
+python -m pip install -e ".[dev]"
 ```
 
-Optional integrations are isolated behind adapters: PyMuPDF/OCR/OpenCV, Neo4j, Qdrant, Manim, Kokoro/Piper and WhisperX.
+Then:
+
+```bash
+examforge architecture
+examforge ingest-text --file notes.txt
+examforge blueprint --file notes.txt
+examforge questions --file notes.txt --count 4
+type notes.txt | examforge ingest-text --document-id economics
+```
+
+Every command emits JSON so the CLI can be composed with shell scripts, CI, other tools, or future TUI clients.
+
+### Commands
+
+- `ingest-text`: text -> canonical Learning IR
+- `blueprint`: text/IR-derived concept -> visual teaching blueprint
+- `questions`: concept -> active-recall question set
+- `review`: mastery state -> next review state
+- `architecture`: inspect the engine pipeline
+
+## Repository layout
+
+- `app/core/`: canonical domain models and stable IDs
+- `app/ingestion/`: document/OCR/image extraction
+- `app/visual/`: graph, table and equation understanding
+- `app/knowledge/`: graph and vector-store ports
+- `app/blueprints/`: declarative teaching blueprints
+- `app/manim/`: scene compilation and validation
+- `app/audio/`: narration and synchronization
+- `app/assessment/`: recall, rescue and mastery
+- `app/cli.py`: product-facing CLI
+- `tests/`: contracts
+- `docs/`: architecture and roadmap
+
+Optional integrations remain isolated behind adapters: PyMuPDF/OCR/OpenCV, Neo4j, Qdrant, Manim, Kokoro/Piper and WhisperX.
