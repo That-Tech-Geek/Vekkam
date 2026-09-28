@@ -10,7 +10,7 @@ from pathlib import Path
 from app.ingestion.document import ingest_document
 from app.llm.client import LLMClient, load_config
 
-_ALLOWED_CLASS_PATTERN = re.compile(r"class\\s+ExamForgeScene\\s*\\(\\s*Scene\\s*\\)")
+_ALLOWED_CLASS_PATTERN = re.compile(r"class\s+ExamForgeScene\s*\(\s*Scene\s*\)")
 
 
 @dataclass(frozen=True)
@@ -24,7 +24,7 @@ class VideoResult:
 
 
 def _extract_code(response: str) -> str:
-    match = re.search(r"\`\`\`(?:python)?\\s*(.*?)\`\`\`", response, re.DOTALL | re.IGNORECASE)
+    match = re.search(r"```(?:python)?\s*(.*?)```", response, re.DOTALL | re.IGNORECASE)
     return match.group(1).strip() if match else response.strip()
 
 
@@ -33,6 +33,20 @@ def _validate_source(source: str) -> None:
         tree = ast.parse(source)
     except SyntaxError as exc:
         raise RuntimeError(f"LLM returned invalid Python: {exc}") from exc
+
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            raise RuntimeError("Generated source may only import from manim.")
+        if isinstance(node, ast.ImportFrom) and node.module != "manim":
+            raise RuntimeError("Generated source may only import from manim.")
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id in {
+            "eval", "exec", "open", "compile", "__import__", "input"
+        }:
+            raise RuntimeError(f"Generated source uses forbidden function: {node.func.id}")
+        if isinstance(node, ast.Name) and node.id in {
+            "os", "sys", "subprocess", "pathlib", "socket", "requests"
+        }:
+            raise RuntimeError(f"Generated source uses forbidden module/name: {node.id}")
 
     if not _ALLOWED_CLASS_PATTERN.search(source):
         raise RuntimeError("Generated Manim source must define an ExamForgeScene(Scene) class.")
@@ -102,25 +116,11 @@ def generate_video(
     scene_path.write_text(manim_source + "\n", encoding="utf-8")
 
     command = [
-        sys.executable,
-        "-m",
-        "manim",
-        "-q",
-        "m",
-        str(scene_path),
-        "ExamForgeScene",
-        "--media_dir",
-        str(scene_dir / "media"),
-        "-o",
-        target.name,
+        sys.executable, "-m", "manim", "-q", "m", str(scene_path), "ExamForgeScene",
+        "--media_dir", str(scene_dir / "media"), "-o", target.name,
     ]
     try:
-        completed = subprocess.run(
-            command,
-            check=True,
-            capture_output=True,
-            text=True,
-        )
+        completed = subprocess.run(command, check=True, capture_output=True, text=True)
     except FileNotFoundError as exc:
         raise RuntimeError(
             "Manim is not installed. Install the generation extra: "
