@@ -1,0 +1,81 @@
+name: Publish to PyPI
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: pypi-publish-main
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Build and publish package
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout commit
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install build tooling
+        run: python -m pip install --upgrade pip build
+
+      - name: Derive immutable release version
+        id: version
+        env:
+          BASE_VERSION: "0.2.0"
+          RUN_NUMBER: ${{ github.run_number }}
+        run: |
+          VERSION="${BASE_VERSION}.post${RUN_NUMBER}"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Publishing ExamForge ${VERSION}"
+
+      - name: Stamp package version
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          import re
+
+          path = Path("pyproject.toml")
+          text = path.read_text(encoding="utf-8")
+          version = os.environ["VERSION"]
+
+          updated, count = re.subn(
+              r'(?m)^version\s*=\s*"[^"]+"$',
+              f'version = "{version}"',
+              text,
+              count=1,
+          )
+
+          if count != 1:
+              raise SystemExit("Could not locate exactly one project version in pyproject.toml")
+
+          path.write_text(updated, encoding="utf-8")
+          print(f"Stamped version: {version}")
+          PY
+
+      - name: Build distribution
+        run: python -m build
+
+      - name: Validate distribution
+        run: |
+          python -m pip install --upgrade twine
+          python -m twine check dist/*
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
