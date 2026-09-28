@@ -12,6 +12,7 @@ from app.blueprints.engine import build_blueprint
 from app.core.models import Concept, MasteryState
 from app.ingestion.text import ingest_text
 from app.llm.client import LLMClient, LLMConfig, config_path, load_config, save_config
+from app.video.pipeline import generate_video
 
 
 def _emit(value: Any) -> None:
@@ -41,6 +42,20 @@ def _review(args: argparse.Namespace) -> None:
     else:
         state = MasteryState.model_validate_json(Path(args.state).read_text(encoding="utf-8"))
     _emit(schedule_review(state, args.recalled).model_dump(mode="json"))
+
+
+def _video(args: argparse.Namespace) -> None:
+    result = generate_video(args.file, args.output)
+    _emit(
+        {
+            "source": str(result.source_path),
+            "output": str(result.output_path),
+            "scene": str(result.scene_path),
+            "document_id": result.document_id,
+            "provider": result.provider,
+            "model": result.model,
+        }
+    )
 
 
 def _llm_connect_api(args: argparse.Namespace) -> None:
@@ -136,6 +151,11 @@ def build_parser() -> argparse.ArgumentParser:
             [q.model_dump(mode="json") for q in generate_questions(_concept(a), a.count)]
         )
     )
+
+    video = sub.add_parser("video", help="Convert a PDF or DOCX document into a rendered Manim video.")
+    video.add_argument("--file", required=True, help="Path to a .pdf or .docx document.")
+    video.add_argument("--output", help="Output .mp4 path; defaults to the input filename with .mp4.")
+    video.set_defaults(handler=_video)
 
     review = sub.add_parser("review", help="Schedule a mastery review from a JSON state.")
     review.add_argument("--state", help="Path to a MasteryState JSON file.")
