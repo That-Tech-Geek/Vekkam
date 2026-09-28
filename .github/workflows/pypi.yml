@@ -59,7 +59,8 @@ jobs:
           updated = text[:match.start(1)] + version + text[match.end(1):]
           path.write_text(updated, encoding="utf-8")
           print(f"Publishing examforge {version}")
-          print(f"version={version}" >> os.environ["GITHUB_OUTPUT"])
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              output.write(f"version={version}\n")
           PY
 
       - name: Build distribution
