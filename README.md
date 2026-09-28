@@ -21,6 +21,12 @@ Install locally:
 python -m pip install -e ".[dev]"
 ```
 
+For PDF/DOCX conversion and Manim rendering:
+
+```bash
+python -m pip install -e ".[document,generation]"
+```
+
 Then:
 
 ```bash
@@ -31,8 +37,12 @@ examforge llm connect-api --model gpt-4.1
 examforge ingest-text --file notes.txt
 examforge blueprint --file notes.txt
 examforge questions --file notes.txt --count 4
+examforge video --file ./notes.pdf
+examforge video --file ./chapter.docx --output ./chapter.mp4
 type notes.txt | examforge ingest-text --document-id economics
 ```
+
+`video` extracts the PDF/DOCX, sends the extracted learning material through the linked LLM to generate a deterministic Manim scene, validates the returned Python, and renders `ExamForgeScene` to MP4. The generated scene is retained under `.examforge/` beside the requested output.
 
 Every command emits JSON so the CLI can be composed with shell scripts, CI, other tools, or future TUI clients.
 
@@ -41,6 +51,7 @@ Every command emits JSON so the CLI can be composed with shell scripts, CI, othe
 - `ingest-text`: text -> canonical Learning IR
 - `blueprint`: text/IR-derived concept -> visual teaching blueprint
 - `questions`: concept -> active-recall question set
+- `video`: PDF/DOCX -> LLM-generated Manim scene -> MP4
 - `review`: mastery state -> next review state
 - `architecture`: inspect the engine pipeline
 - `llm connect-api`: link an OpenAI-compatible API using an environment variable for the key
@@ -56,6 +67,7 @@ Every command emits JSON so the CLI can be composed with shell scripts, CI, othe
 - `app/knowledge/`: graph and vector-store ports
 - `app/blueprints/`: declarative teaching blueprints
 - `app/manim/`: scene compilation and validation
+- `app/video/`: document-to-Manim video pipeline
 - `app/audio/`: narration and synchronization
 - `app/assessment/`: recall, rescue and mastery
 - `app/cli.py`: product-facing CLI
